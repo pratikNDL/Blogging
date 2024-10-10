@@ -23,6 +23,7 @@ app.use('*', async (c, next) => {
     datasourceUrl: c.env.DATABASE_URL
   }).$extends(withAccelerate());
 
+  //@ts-ignore
   c.set('prisma', prisma );
   await next();
 })

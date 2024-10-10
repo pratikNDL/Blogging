@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { sign, verify } from 'hono/jwt'
 import { PrismaClient } from '@prisma/client/extension';
+import { signininput, signupinput } from '@pratikndl/common';
 
 const router = new Hono< {
     Bindings: {
@@ -16,12 +17,19 @@ router.post('/signup', async (c) => {
 	
     const prisma = c.get('prisma');
     const body = await c.req.json();
+    const {success, data} = signupinput.safeParse(body);
+
+    if(!success) {
+      c.status(403);
+      return c.json({message: "Improper Input"})
+    }
   
     try {
       const user = await prisma.user.create({
         data: {
-          email: body.email,
-          password: body.password,
+          email: data.email,
+          password: data.password,
+          name: data.name
         }
       })
   
@@ -39,11 +47,17 @@ router.post('/signup', async (c) => {
 router.post('/signin', async (c) => {
     const prisma = c.get('prisma');
     const body = await c.req.json();
+    const {success, data} = signininput.safeParse(body);
+
+    if(!success) {
+      c.status(403);
+      return c.json({message: "Improper Input"})
+    }
     
     const user = await prisma.user.findFirst({
       where: {
-        email: body.email,
-        password: body.password
+        email: data.email,
+        password: data.password
       }
     })
     

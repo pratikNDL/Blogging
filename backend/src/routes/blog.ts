@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { PrismaClient } from '@prisma/client';
+import { createPostInput, updatePostInput } from '@pratikndl/common';
 
 const router = new Hono< {
     Bindings: {
@@ -16,11 +17,18 @@ router.post('/', async (c) => {
     const userid = c.get('userid');
     const body = await c.req.json(); 
 
+    const {success, data} = createPostInput.safeParse(body);
+
+    if(!success) {
+      c.status(403);
+      return c.json({message: "Improper Input"})
+    }
+
     try {
         const post = await prisma.post.create({
             data: {
-                title: body.title,
-                content: body.content,
+                title: data.title,
+                content: data.content,
                 authorId: userid
             }
         })
@@ -37,6 +45,13 @@ router.put('/', async (c) => {
     const prisma = c.get('prisma');
     const userid = c.get('userid');
     const body = await c.req.json(); 
+
+    const {success, data} = updatePostInput.safeParse(body);
+
+    if(!success) {
+      c.status(403);
+      return c.json({message: "Improper Input"})
+    }
 
     try {
         const post = await prisma.post.update({
